@@ -93,10 +93,12 @@ import com.metrolist.music.constants.HideExplicitKey
 import com.metrolist.music.constants.HideVideoSongsKey
 import com.metrolist.music.constants.HistoryDuration
 import com.metrolist.music.constants.LastFMUseNowPlaying
+import com.metrolist.music.constants.MediaSessionConstants.CommandShowLyrics
 import com.metrolist.music.constants.MediaSessionConstants.CommandToggleLike
 import com.metrolist.music.constants.MediaSessionConstants.CommandToggleRepeatMode
 import com.metrolist.music.constants.MediaSessionConstants.CommandToggleShuffle
 import com.metrolist.music.constants.MediaSessionConstants.CommandToggleStartRadio
+import com.metrolist.music.constants.MediaSessionConstants.EXTRA_SHOW_LYRICS
 import com.metrolist.music.constants.PauseListenHistoryKey
 import com.metrolist.music.constants.PauseOnMute
 import com.metrolist.music.constants.PersistentQueueKey
@@ -447,6 +449,7 @@ class MusicService :
             toggleLike = ::toggleLike
             toggleStartRadio = ::toggleStartRadio
             toggleLibrary = ::toggleLibrary
+            showLyrics = ::showLyrics
         }
         mediaSession =
             MediaLibrarySession
@@ -1088,6 +1091,12 @@ class MusicService :
                     .setSessionCommand(CommandToggleStartRadio)
                     .setEnabled(currentSong.value != null)
                     .build(),
+                CommandButton.Builder()
+                    .setDisplayName(getString(R.string.show_lyrics))
+                    .setIconResId(R.drawable.lyrics)
+                    .setSessionCommand(CommandShowLyrics)
+                    .setEnabled(currentSong.value != null)
+                    .build(),
             ),
         )
     }
@@ -1578,6 +1587,20 @@ class MusicService :
 
     fun toggleStartRadio() {
         startRadioSeamlessly()
+    }
+
+    /**
+     * Opens the main activity to display song lyrics.
+     * This function is called when the user taps the "Show Lyrics" button in Android Auto.
+     * The intent includes the EXTRA_SHOW_LYRICS flag which can be used by MainActivity
+     * to automatically expand the player and show lyrics when the app is opened.
+     */
+    fun showLyrics() {
+        val intent = Intent(this, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP
+            putExtra(EXTRA_SHOW_LYRICS, true)
+        }
+        startActivity(intent)
     }
 
     private fun setupLoudnessEnhancer() {
