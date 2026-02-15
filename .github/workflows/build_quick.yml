@@ -49,7 +49,7 @@ jobs:
       - name: Change Package Name for Test Build
         run: |
           # Change applicationId to test variant
-          sed -i 's/applicationId = "com.metrolist.music"/applicationId = "com.metrolist.music.test"/' app/build.gradle.kts
+          sed -i 's/applicationId = "com.gabriel20xx.metrolist"/applicationId = "com.gabriel20xx.metrolist.test"/' app/build.gradle.kts
 
       - name: Build Universal Release APK (No Lint)
         run: ./gradlew --console=plain assembleUniversalFossRelease --warning-mode summary -x lint -x lintUniversalFossRelease
@@ -60,6 +60,7 @@ jobs:
           LASTFM_SECRET: ${{ secrets.LASTFM_SECRET }}
 
       - name: Sign APK
+        if: ${{ secrets.KEYSTORE != '' }}
         uses: ilharp/sign-android-release@v2.0.0
         with:
           releaseDir: app/build/outputs/apk/universalFoss/release/
@@ -69,13 +70,23 @@ jobs:
           keyPassword: ${{ secrets.KEY_PASSWORD }}
           buildToolsVersion: 35.0.0
 
-      - name: Move signed APK
+      - name: Rename and move APK
         run: |
           OUTPUT_DIR="app/build/outputs/apk/universalFoss/release"
           mkdir -p "$OUTPUT_DIR/out"
-          find "$OUTPUT_DIR" -name "*-signed.apk" -o -name "*-unsigned-signed.apk" | xargs -I{} mv {} "$OUTPUT_DIR/out/app-universal-test-release.apk"
+          # Try to find signed APK first, fall back to unsigned if not found
+          SIGNED_APK=$(find "$OUTPUT_DIR" -name "*-signed.apk" -o -name "*-unsigned-signed.apk" | head -n 1)
+          if [ -n "$SIGNED_APK" ]; then
+            mv "$SIGNED_APK" "$OUTPUT_DIR/out/app-universal-test-release.apk"
+          else
+            # Use unsigned APK
+            UNSIGNED_APK=$(find "$OUTPUT_DIR" -name "*.apk" -not -path "*/out/*" | head -n 1)
+            if [ -n "$UNSIGNED_APK" ]; then
+              mv "$UNSIGNED_APK" "$OUTPUT_DIR/out/app-universal-test-release.apk"
+            fi
+          fi
 
-      - name: Upload Signed APK
+      - name: Upload APK
         uses: actions/upload-artifact@v6
         with:
           name: app-universal-test-release

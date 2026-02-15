@@ -20,7 +20,7 @@ android {
     ndkVersion = "27.0.12077973"
 
     defaultConfig {
-        applicationId = "com.metrolist.music"
+        applicationId = "com.gabriel20xx.metrolist"
         minSdk = 26
         targetSdk = 36
         versionCode = 140
