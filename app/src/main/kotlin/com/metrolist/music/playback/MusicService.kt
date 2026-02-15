@@ -98,6 +98,7 @@ import com.metrolist.music.constants.MediaSessionConstants.CommandToggleLike
 import com.metrolist.music.constants.MediaSessionConstants.CommandToggleRepeatMode
 import com.metrolist.music.constants.MediaSessionConstants.CommandToggleShuffle
 import com.metrolist.music.constants.MediaSessionConstants.CommandToggleStartRadio
+import com.metrolist.music.constants.MediaSessionConstants.EXTRA_SHOW_LYRICS
 import com.metrolist.music.constants.PauseListenHistoryKey
 import com.metrolist.music.constants.PauseOnMute
 import com.metrolist.music.constants.PersistentQueueKey
@@ -1588,10 +1589,16 @@ class MusicService :
         startRadioSeamlessly()
     }
 
+    /**
+     * Opens the main activity to display song lyrics.
+     * This function is called when the user taps the "Show Lyrics" button in Android Auto.
+     * The intent includes the EXTRA_SHOW_LYRICS flag which can be used by MainActivity
+     * to automatically expand the player and show lyrics when the app is opened.
+     */
     fun showLyrics() {
         val intent = Intent(this, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP
-            putExtra("show_lyrics", true)
+            putExtra(EXTRA_SHOW_LYRICS, true)
         }
         startActivity(intent)
     }
