@@ -137,7 +137,14 @@ jobs:
         continue-on-error: true
         run: |
           if [ -n "${{ secrets.DEBUG_KEYSTORE }}" ]; then
-            echo "${{ secrets.DEBUG_KEYSTORE }}" | base64 -d > ./app/persistent-debug.keystore || true
+            if echo "${{ secrets.DEBUG_KEYSTORE }}" | base64 -d > ./app/persistent-debug.keystore 2>/dev/null; then
+              echo "Persistent keystore restored successfully"
+            else
+              echo "Failed to decode keystore, will use default debug keystore"
+              rm -f ./app/persistent-debug.keystore
+            fi
+          else
+            echo "DEBUG_KEYSTORE secret not set, will use default debug keystore"
           fi
 
       - name: Build Universal Debug APK and Run Lint
