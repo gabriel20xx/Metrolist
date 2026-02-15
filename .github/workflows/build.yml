@@ -138,9 +138,18 @@ jobs:
         env:
           DEBUG_KEYSTORE_VALUE: ${{ secrets.DEBUG_KEYSTORE }}
         run: |
+          # Remove any existing keystore file first
+          rm -f ./app/persistent-debug.keystore
+          
           if [ -n "$DEBUG_KEYSTORE_VALUE" ]; then
             if echo "$DEBUG_KEYSTORE_VALUE" | base64 -d > ./app/persistent-debug.keystore 2>/dev/null; then
-              echo "Persistent keystore restored successfully"
+              # Validate keystore is readable by keytool
+              if keytool -list -keystore ./app/persistent-debug.keystore -storepass android -alias androiddebugkey >/dev/null 2>&1; then
+                echo "Persistent keystore restored and validated successfully"
+              else
+                echo "Keystore validation failed, will use default debug keystore"
+                rm -f ./app/persistent-debug.keystore
+              fi
             else
               echo "Failed to decode keystore, will use default debug keystore"
               rm -f ./app/persistent-debug.keystore
