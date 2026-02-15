@@ -93,6 +93,7 @@ import com.metrolist.music.constants.HideExplicitKey
 import com.metrolist.music.constants.HideVideoSongsKey
 import com.metrolist.music.constants.HistoryDuration
 import com.metrolist.music.constants.LastFMUseNowPlaying
+import com.metrolist.music.constants.MediaSessionConstants.CommandShowLyrics
 import com.metrolist.music.constants.MediaSessionConstants.CommandToggleLike
 import com.metrolist.music.constants.MediaSessionConstants.CommandToggleRepeatMode
 import com.metrolist.music.constants.MediaSessionConstants.CommandToggleShuffle
@@ -447,6 +448,7 @@ class MusicService :
             toggleLike = ::toggleLike
             toggleStartRadio = ::toggleStartRadio
             toggleLibrary = ::toggleLibrary
+            showLyrics = ::showLyrics
         }
         mediaSession =
             MediaLibrarySession
@@ -1088,6 +1090,12 @@ class MusicService :
                     .setSessionCommand(CommandToggleStartRadio)
                     .setEnabled(currentSong.value != null)
                     .build(),
+                CommandButton.Builder()
+                    .setDisplayName(getString(R.string.show_lyrics))
+                    .setIconResId(R.drawable.lyrics)
+                    .setSessionCommand(CommandShowLyrics)
+                    .setEnabled(currentSong.value != null)
+                    .build(),
             ),
         )
     }
@@ -1578,6 +1586,14 @@ class MusicService :
 
     fun toggleStartRadio() {
         startRadioSeamlessly()
+    }
+
+    fun showLyrics() {
+        val intent = Intent(this, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP
+            putExtra("show_lyrics", true)
+        }
+        startActivity(intent)
     }
 
     private fun setupLoudnessEnhancer() {
