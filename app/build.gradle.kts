@@ -15,7 +15,7 @@ plugins {
 }
 
 android {
-    namespace = "com.gabriel20xx.metrolist"
+    namespace = "com.metrolist.music"
     compileSdk = 36
     ndkVersion = "27.0.12077973"
 
