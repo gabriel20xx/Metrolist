@@ -134,8 +134,20 @@ jobs:
         run: chmod +x gradlew
 
       - name: Restore Persistent Keystore
+        continue-on-error: true
+        env:
+          DEBUG_KEYSTORE_VALUE: ${{ secrets.DEBUG_KEYSTORE }}
         run: |
-          echo "${{ secrets.DEBUG_KEYSTORE }}" | base64 -d > ./app/persistent-debug.keystore
+          if [ -n "$DEBUG_KEYSTORE_VALUE" ]; then
+            if echo "$DEBUG_KEYSTORE_VALUE" | base64 -d > ./app/persistent-debug.keystore 2>/dev/null; then
+              echo "Persistent keystore restored successfully"
+            else
+              echo "Failed to decode keystore, will use default debug keystore"
+              rm -f ./app/persistent-debug.keystore
+            fi
+          else
+            echo "DEBUG_KEYSTORE secret not set, will use default debug keystore"
+          fi
 
       - name: Build Universal Debug APK and Run Lint
         run: ./gradlew --console=plain assembleUniversal${{ matrix.variant == 'foss' && 'Foss' || 'Gms' }}Debug :app:lintUniversal${{ matrix.variant == 'foss' && 'Foss' || 'Gms' }}Debug --warning-mode summary

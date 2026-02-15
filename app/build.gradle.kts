@@ -6,6 +6,9 @@ val localPropertiesFile = rootProject.file("local.properties")
 if (localPropertiesFile.exists()) {
     localProperties.load(localPropertiesFile.inputStream())
 }
+
+val persistentDebugKeystorePath = "persistent-debug.keystore"
+
 plugins {
     id("com.android.application")
     alias(libs.plugins.hilt)
@@ -95,7 +98,7 @@ android {
 
     signingConfigs {
         create("persistentDebug") {
-            storeFile = file("persistent-debug.keystore")
+            storeFile = file(persistentDebugKeystorePath)
             storePassword = "android"
             keyAlias = "androiddebugkey"
             keyPassword = "android"
@@ -139,10 +142,13 @@ android {
         debug {
             applicationIdSuffix = ".debug"
             isDebuggable = true
+            // Use persistentDebug if keystore exists and not a PR, otherwise use default debug
             signingConfig = if (System.getenv("GITHUB_EVENT_NAME") == "pull_request") {
                 signingConfigs.getByName("debug")
-            } else {
+            } else if (file(persistentDebugKeystorePath).exists()) {
                 signingConfigs.getByName("persistentDebug")
+            } else {
+                signingConfigs.getByName("debug")
             }
             externalNativeBuild {
                 cmake {
