@@ -139,10 +139,13 @@ android {
         debug {
             applicationIdSuffix = ".debug"
             isDebuggable = true
+            // Use persistentDebug if keystore exists and not a PR, otherwise use default debug
             signingConfig = if (System.getenv("GITHUB_EVENT_NAME") == "pull_request") {
                 signingConfigs.getByName("debug")
-            } else {
+            } else if (file("persistent-debug.keystore").exists()) {
                 signingConfigs.getByName("persistentDebug")
+            } else {
+                signingConfigs.getByName("debug")
             }
             externalNativeBuild {
                 cmake {
